@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Image Detection (CNN)</title>
+</head>
+
+<body>
+    <h2>Product Image Detection (CNN)</h2>
+
+    <!-- Upload Form -->
+    <form id="form">
+        <input type="file" id="img" required>
+        <button type="submit">Detect</button>
+    </form>
+
+    <hr>
+
+    <!-- Predicted Class -->
+    <h3>Predicted Class</h3>
+    <input id="pred_class" type="text" style="width:90%; padding:8px;" readonly>
+
+    <!-- Summary -->
+    <h3>Summary</h3>
+    <div id="summary" style="border:1px solid #ccc; padding:10px; width:90%;"></div>
+
+    <!-- Recommended Products -->
+    <h3>Recommended Products</h3>
+    <table id="table" border="1" cellpadding="8" style="border-collapse: collapse; width:90%;">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Country</th>
+                <th>Price</th>
+                <th>Similarity Score</th>
+                <th>Stock Code</th>
+            </tr>
+        </thead>
+        <tbody id="table_body"></tbody>
+    </table>
+
+    <script>
+        document.getElementById("form").onsubmit = async (e) => {
+            e.preventDefault();
+
+            let file = document.getElementById("img").files[0];
+            let fd = new FormData();
+            fd.append("image", file);
+
+            let res = await fetch("/detect-product", {
+                method: "POST",
+                body: fd
+            });
+
+            let data = await res.json();
+
+            // Show predicted class
+            document.getElementById("pred_class").value = data.predicted_class || "";
+
+            // Summary text (natural-language response)
+            document.getElementById("summary").textContent = data.response || "";
+
+            // Fill Table
+            let tb = document.getElementById("table_body");
+            tb.innerHTML = "";
+
+            if (data.products && data.products.length > 0) {
+                data.products.forEach(p => {
+                    let row = `
+                        <tr>
+                            <td>${p.description}</td>
+                            <td>${p.country}</td>
+                            <td>£${p.price}</td>
+                            <td>${p.similarity_score.toFixed(3)}</td>
+                            <td>${p.stock_code}</td>
+                        </tr>
+                    `;
+                    tb.innerHTML += row;
+                });
+            }
+        };
+    </script>
+
+</body>
+</html>

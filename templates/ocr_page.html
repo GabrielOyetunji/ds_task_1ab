@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OCR Image → Text → Recommendation</title>
+    <style>
+        body { font-family: Arial; margin: 30px; }
+        h2 { margin-bottom: 10px; }
+        .section { margin-top: 25px; }
+        table { border-collapse: collapse; width: 80%; margin-top: 15px; }
+        th, td { border: 1px solid #ccc; padding: 8px; }
+        th { background: #f2f2f2; }
+        .error { color: red; font-weight: bold; }
+        .text-box { white-space: pre-wrap; padding: 10px; background: #fafafa; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h2>OCR Image → Text → Recommendation</h2>
+
+<form method="POST" enctype="multipart/form-data" action="/ocr-recommend">
+    <input type="file" name="image" required>
+    <button type="submit">Submit</button>
+</form>
+
+<!-- Error message -->
+{% if data and data.error %}
+<div class="section error">
+    {{ data.error }}
+</div>
+{% endif %}
+
+<!-- Extracted text -->
+{% if data and data.extracted_text %}
+<div class="section">
+    <h3>Extracted Text</h3>
+    <div class="text-box">{{ data.extracted_text }}</div>
+</div>
+{% endif %}
+
+<!-- Natural language summary -->
+{% if data and data.response %}
+<div class="section">
+    <h3>Summary</h3>
+    <div class="text-box">{{ data.response }}</div>
+</div>
+{% endif %}
+
+<!-- Product table -->
+{% if data and data.products %}
+<div class="section">
+    <h3>Recommended Products</h3>
+    <table>
+        <tr>
+            <th>Description</th>
+            <th>Country</th>
+            <th>Price</th>
+            <th>Similarity Score</th>
+            <th>Stock Code</th>
+        </tr>
+
+        {% for p in data.products %}
+        <tr>
+            <td>{{ p.description }}</td>
+            <td>{{ p.country }}</td>
+            <td>£{{ "%.2f"|format(p.price) }}</td>
+            <td>{{ "%.3f"|format(p.similarity_score) }}</td>
+            <td>{{ p.stock_code }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+</body>
+</html>
